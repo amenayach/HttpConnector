@@ -62,7 +62,7 @@
         {
             if (!useProxy)
             {
-                return new HttpClient();
+                return new HttpClient(new HttpClientHandler { UseProxy = false });
             }
 
             var handler = new HttpClientHandler()
