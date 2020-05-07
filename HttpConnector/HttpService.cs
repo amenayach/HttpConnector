@@ -30,12 +30,17 @@
             this.proxyPassword = proxyPassword;
         }
 
-        public async Task Get(string url, bool useProxy)
+        public async Task Get(string url, bool useProxy, TimeSpan timeout)
         {
             try
             {
                 using (var httpClient = GetHttpClient(useProxy))
                 {
+                    if (timeout.TotalSeconds != 0)
+                    {
+                        httpClient.Timeout = timeout;
+                    }
+
                     var response = await httpClient.GetAsync(url);
 
                     $"Status code: {response.StatusCode}".Print();

@@ -16,6 +16,7 @@ namespace HttpConnector
                 "1. Http Get without proxy".Print();
                 "2. Setup proxy".Print();
                 "3. Http Get with proxy".Print();
+                "4. Http Get with timeout".Print();
                 "x. Exit".Print();
 
                 command = Console.ReadLine();
@@ -24,14 +25,17 @@ namespace HttpConnector
                 {
                     case "1":
                         "Please enter the URL:".Print(ConsoleColor.Yellow);
-                        await httpService.Get(Console.ReadLine(), false);
+                        await httpService.Get(Console.ReadLine(), false, TimeSpan.FromSeconds(0));
                         break;
                     case "2":
                         SetupProxy(httpService);
                         break;
                     case "3":
                         "Please enter the URL:".Print(ConsoleColor.Yellow);
-                        await httpService.Get(Console.ReadLine(), true);
+                        await httpService.Get(Console.ReadLine(), true, TimeSpan.FromSeconds(0));
+                        break;
+                    case "4":
+                        await HttpGetWithTimeout(httpService);
                         break;
                     default:
                         break;
@@ -40,6 +44,18 @@ namespace HttpConnector
                 Console.WriteLine();
                 "===============================================================".Print();
             } while (!command.Trim().ToLower().Equals("x"));
+        }
+
+        private static async Task HttpGetWithTimeout(HttpService httpService)
+        {
+            "Please enter the URL:".Print(ConsoleColor.Yellow);
+            var url = Console.ReadLine();
+            "Please enter the timeout in seconds:".Print(ConsoleColor.Yellow);
+            var timeout = TimeSpan.FromSeconds(int.Parse(Console.ReadLine()));
+            "Use proxy (yes/no):".Print(ConsoleColor.Yellow);
+            var useProxyAnswer = Console.ReadLine().ToLower()?.Trim();
+            var useProxy = useProxyAnswer == "yes" || useProxyAnswer == "y";
+            await httpService.Get(url, useProxy, timeout);
         }
 
         private static void SetupProxy(HttpService httpService)
