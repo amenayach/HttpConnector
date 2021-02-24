@@ -63,6 +63,41 @@
             }
         }
 
+        public async Task Post(string url, bool useProxy, TimeSpan timeout, string jsonText)
+        {
+            try
+            {
+                using (var httpClient = GetHttpClient(useProxy))
+                {
+                    if (timeout.TotalSeconds != 0)
+                    {
+                        httpClient.Timeout = timeout;
+                    }
+
+                    var content = new StringContent(jsonText, Encoding.UTF8, "application/json");
+
+                    var response = await httpClient.PostAsync(url, content);
+
+                    $"Status code: {response.StatusCode}".Print();
+
+                    var rawContent = await response.Content.ReadAsStringAsync();
+
+                    Console.WriteLine();
+                    $"Response Content: {rawContent}".Print(response.IsSuccessStatusCode ? ConsoleColor.Green : ConsoleColor.Red);
+                }
+            }
+            catch (Exception ex)
+            {
+                "Exception:".Print(ConsoleColor.Red);
+                ex.Message.Print(ConsoleColor.Red);
+                ex.StackTrace.Print(ConsoleColor.Red);
+                if (ex.InnerException != null)
+                {
+                    ex.Message.Print(ConsoleColor.Red);
+                }
+            }
+        }
+
         private HttpClient GetHttpClient(bool useProxy)
         {
             if (!useProxy)

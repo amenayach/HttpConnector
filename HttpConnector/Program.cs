@@ -17,6 +17,9 @@ namespace HttpConnector
                 "2. Setup proxy".Print();
                 "3. Http Get with proxy".Print();
                 "4. Http Get with timeout".Print();
+                "5. Http Post without proxy".Print();
+                "6. Http Post with proxy".Print();
+                "7. Http Post with timeout".Print();
                 "x. Exit".Print();
 
                 command = Console.ReadLine();
@@ -35,7 +38,24 @@ namespace HttpConnector
                         await httpService.Get(Console.ReadLine(), true, TimeSpan.FromSeconds(0));
                         break;
                     case "4":
-                        await HttpGetWithTimeout(httpService);
+                        await HttpGetWithTimeout(async (url, useProxy, timeout) =>
+                        {
+                            await httpService.Get(url, useProxy, timeout);
+                        });
+                        break;
+                    case "5":
+                        "Please enter the URL:".Print(ConsoleColor.Yellow);
+                        await httpService.Post(Console.ReadLine(), false, TimeSpan.FromSeconds(0), GetJsonPayload());
+                        break;
+                    case "6":
+                        "Please enter the URL:".Print(ConsoleColor.Yellow);
+                        await httpService.Post(Console.ReadLine(), true, TimeSpan.FromSeconds(0), GetJsonPayload());
+                        break;
+                    case "7":
+                        await HttpGetWithTimeout(async (url, useProxy, timeout) =>
+                        {
+                            await httpService.Post(url, useProxy, timeout, GetJsonPayload());
+                        });
                         break;
                     default:
                         break;
@@ -46,7 +66,13 @@ namespace HttpConnector
             } while (!command.Trim().ToLower().Equals("x"));
         }
 
-        private static async Task HttpGetWithTimeout(HttpService httpService)
+        private static string GetJsonPayload()
+        {
+            "Please enter the json payload:".Print(ConsoleColor.Yellow);
+            return Console.ReadLine();
+        }
+
+        private static async Task HttpGetWithTimeout(Func<string, bool, TimeSpan, Task> httpServiceAction)
         {
             "Please enter the URL:".Print(ConsoleColor.Yellow);
             var url = Console.ReadLine();
@@ -55,7 +81,7 @@ namespace HttpConnector
             "Use proxy (yes/no):".Print(ConsoleColor.Yellow);
             var useProxyAnswer = Console.ReadLine().ToLower()?.Trim();
             var useProxy = useProxyAnswer == "yes" || useProxyAnswer == "y";
-            await httpService.Get(url, useProxy, timeout);
+            await httpServiceAction(url, useProxy, timeout);
         }
 
         private static void SetupProxy(HttpService httpService)
